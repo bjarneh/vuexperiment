@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Vue</title>
+    <script type='text/javascript' src='js/vue.js'></script>
+</head>
+
+<body>
+ <div id="app">
+   <p>{{ message }}</p>
+   <input type='text' v-model='message' />
+   <button v-on:click="reverseInput">Reverse</button>
+   <hr />
+   <ol>
+     <todo-item
+       v-for="item in groceryList"
+       v-bind:todo="item"
+       v-bind:key="item.id">
+     </todo-item>
+   </ol>
+   <input type='text' v-model='todoItem' />
+   <button v-on:click="addItem">Add item</button>
+ </div>
+</body>
+
+<script type='text/javascript'>
+
+// Return reversed string
+function rev(s){
+    return s.split('').reverse().join('');
+}
+
+// Return next available id in lst (groceryList)
+function nextAvailableId(lst){
+    var max = 0;
+    for(var i = 0; i < lst.length; i++){
+        if( lst.id > max ){
+            max = lst.id;
+        }
+    }
+    return max + 1;
+}
+
+Vue.component(
+    'todo-item', {
+        props: ['todo'],
+        template: '<li>{{ todo.text }}</li>'
+    }
+);
+
+new Vue({
+      el: '#app',
+      data: {
+          message: 'Hello Vue.js!',
+          todoItem: '',
+          groceryList: [
+            { id: 0, text: 'Vegetables' },
+            { id: 1, text: 'Cheese' },
+            { id: 2, text: 'Whatever else humans are supposed to eat' }
+          ]
+      },
+      methods: {
+          reverseInput: function(){
+              this.message = rev(this.message);
+              for(var i = 0; i < this.groceryList.length; i++){
+                  this.groceryList[i].text = rev(this.groceryList[i].text);
+              }
+          },
+          addItem: function(){
+              if( ! /^\s*$/.test(this.todoItem) ){
+                 this.groceryList.push( { id: nextAvailableId(this.groceryList),
+                                          text: this.todoItem } );
+                 this.todoItem = "";
+              }
+          }
+      }
+ });
+
+</script>
+</html>
