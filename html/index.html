@@ -12,13 +12,13 @@
    <input type='text' v-model='message' />
    <button v-on:click="reverseInput">Reverse</button>
    <hr />
-   <ol>
+   <ul>
      <todo-item
-       v-for="item in groceryList"
+       v-for="item in todoList"
        v-bind:todo="item"
        v-bind:key="item.id">
      </todo-item>
-   </ol>
+   </ul>
    <input type='text' v-model='todoItem' />
    <button v-on:click="addItem">Add item</button>
  </div>
@@ -31,7 +31,7 @@ function rev(s){
     return s.split('').reverse().join('');
 }
 
-// Return next available id in lst (groceryList)
+// Return next available id in lst (todoList)
 function nextAvailableId(lst){
     var max = 0;
     for(var i = 0; i < lst.length; i++){
@@ -45,7 +45,14 @@ function nextAvailableId(lst){
 Vue.component(
     'todo-item', {
         props: ['todo'],
-        template: '<li>{{ todo.text }}</li>'
+        template: '<li> <button v-on:click="rmItem( $event.target )"> x </button> {{ todo.text }}</li>',
+        methods: {
+            rmItem: function( el ){
+                father = el.parentNode;
+                grandFather = father.parentNode;
+                grandFather.removeChild( father );
+            }
+        }
     }
 );
 
@@ -54,7 +61,7 @@ new Vue({
       data: {
           message: 'Hello Vue.js!',
           todoItem: '',
-          groceryList: [
+          todoList: [
             { id: 0, text: 'Vegetables' },
             { id: 1, text: 'Cheese' },
             { id: 2, text: 'Whatever else humans are supposed to eat' }
@@ -63,13 +70,13 @@ new Vue({
       methods: {
           reverseInput: function(){
               this.message = rev(this.message);
-              for(var i = 0; i < this.groceryList.length; i++){
-                  this.groceryList[i].text = rev(this.groceryList[i].text);
+              for(var i = 0; i < this.todoList.length; i++){
+                  this.todoList[i].text = rev(this.todoList[i].text);
               }
           },
           addItem: function(){
               if( ! /^\s*$/.test(this.todoItem) ){
-                 this.groceryList.push( { id: nextAvailableId(this.groceryList),
+                 this.todoList.push( { id: nextAvailableId(this.todoList),
                                           text: this.todoItem } );
                  this.todoItem = "";
               }
