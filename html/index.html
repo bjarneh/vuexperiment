@@ -4,6 +4,7 @@
 <head>
     <title>Vue</title>
     <script type='text/javascript' src='js/vue.js'></script>
+    <script type='text/javascript' src='js/axios.js'></script>
 </head>
 
 <body>
@@ -21,6 +22,8 @@
    </ul>
    <input type='text' v-model='todoItem' />
    <button v-on:click="addItem">Add item</button>
+   <hr />
+   Fetch a new set of TODO elements with a <button v-on:click="restMock">GET</button> request
  </div>
 </body>
 
@@ -80,6 +83,21 @@ new Vue({
                                           text: this.todoItem } );
                  this.todoItem = "";
               }
+          },
+          restMock: function(){
+              var that = this;
+              axios.get('static/todo.json')
+                  .then(function (response) {
+                      that.todoList = [];
+                      for(var i = 0; i < response.data.length; i++){
+                          that.todoList.push({
+                              id: i,
+                              text: response.data[i]
+                          });
+                      }
+                  }).catch(function (error) {
+                      console.log(error);
+                  });
           }
       }
  });
