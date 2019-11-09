@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Vue</title>
+    <script type='text/javascript' src='js/vue.js'></script>
+    <script type='text/javascript' src='js/axios.js'></script>
+</head>
+
+<body>
+ <div id="app">
+   <p>{{ message }}</p>
+   <input type='text' v-model='message' />
+   <button v-on:click="reverseInput">Reverse</button>
+   <hr />
+   <ul>
+     <todo-item
+       v-for="item in todoList"
+       v-bind:todo="item"
+       v-bind:key="item.id">
+     </todo-item>
+   </ul>
+   <input type='text' v-model='todoItem' />
+   <button v-on:click="addItem">Add item</button>
+   <hr />
+   Fetch from database with a <button v-on:click="getAllTodos">GET</button> request
+ </div>
+</body>
+
+<script type='text/javascript'>
+
+// TODO actual login etc.
+const headers = {
+   'Content-Type': 'application/json',
+   'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoidG9kb191c2VyIn0.g1z4ClpVoc_zFuGDBhRZzxWAbD9JtV7dN0jS9fAm-pQ'
+}
+
+// Return reversed string
+function rev(s){
+    return s.split('').reverse().join('');
+}
+
+Vue.component(
+    'todo-item', {
+        props: ['todo'],
+        template: '<li> <button v-on:click="rmItem( todo.id )"> x </button> {{ todo.task }}</li>',
+        methods: {
+            rmItem: function( id ){
+                axios.delete('http://localhost:3000/todos?id=eq.' + id, { headers: headers } )
+                     .then(function (response) {
+                         console.log(response);
+                         var rm = -1;
+                         for(var i = 0; i < vm.todoList.length; i++){
+                             if(vm.todoList[i].id === id){
+                                 rm = i;
+                                 break;
+                             }
+                         }
+                         if( rm != -1 ){
+                             vm.todoList.splice(rm, 1);
+                         }
+                     })
+                     .catch(function (error) {
+                        console.log(error);
+                     });
+            }
+        }
+    }
+);
+
+var vm = new Vue({
+      el: '#app',
+      data: {
+          message: 'Hello Vue.js!',
+          todoItem: '',
+          todoList: []
+      },
+      methods: {
+          reverseInput: function(){
+              this.message = rev(this.message);
+              for(var i = 0; i < this.todoList.length; i++){
+                  this.todoList[i].task = rev(this.todoList[i].task);
+              }
+          },
+          addItem: function(){
+              if( ! /^\s*$/.test(this.todoItem) ){
+                  var that = this;
+                  axios.post('http://localhost:3000/todos', { task: this.todoItem }, { headers: headers } )
+                       .then(function (response) {
+                           console.log(response);
+                           vm.getAllTodos();
+                           vm.todoItem = "";
+                       })
+                       .catch(function (error) {
+                          console.log(error);
+                       });
+              }
+          },
+          getAllTodos: function(){
+              var that = this;
+              axios.get('http://localhost:3000/todos')
+                   .then(function (response) {
+                       that.todoList = [];
+                       for(var i = 0; i < response.data.length; i++){
+                           that.todoList.push(response.data[i]);
+                       }
+                   }).catch(function (error) {
+                       console.log(error);
+                   });
+          }
+      }
+ });
+
+vm.getAllTodos();
+
+</script>
+</html>
